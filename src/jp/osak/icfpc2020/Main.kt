@@ -19,7 +19,7 @@ class Main {
 
         val canvas = GalaxyCanvas(engine)
         frame.contentPane.add(canvas)
-        frame.setSize(600, 600)
+        frame.setSize(800, 800)
         frame.isVisible = true
 
         canvas.createBufferStrategy(2)

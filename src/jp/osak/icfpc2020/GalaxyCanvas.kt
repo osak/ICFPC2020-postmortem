@@ -1,33 +1,41 @@
 package jp.osak.icfpc2020
 
-import java.awt.Canvas
-import java.awt.Color
-import java.awt.Graphics
+import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.lang.Double.min
+import java.lang.Math.*
+import kotlin.math.absoluteValue
+import kotlin.math.nextDown
 
 data class Vec(val x: Int, val y: Int)
 
 class GalaxyCanvas(private val engine: GalaxyEngine) : Canvas() {
     private var state: Term = Lambda(Lambda.Type.NIL)
     private var data: List<List<Vec>> = listOf()
-    private val colors = listOf(Color.BLUE, Color.GREEN, Color.RED, Color.GRAY, Color.ORANGE)
+    private var scale = 5
+    private val colors = listOf(Color.BLUE, Color.GREEN, Color.RED, Color.GRAY, Color.ORANGE, Color.PINK)
 
     init {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                run(Vec((e.x - width/2) / 3, (e.y - height/2) / 3))
+                val px = floor((e.x - width/2).toDouble() / scale).toInt()
+                val py = floor((e.y - height/2).toDouble() / scale).toInt()
+                println("Click: (${e.x}, ${e.y}), Galaxy: (${px}, ${py}), whs: (${width}, ${height}, ${scale})")
+                run(Vec(px, py))
             }
         })
     }
 
     override fun paint(g: Graphics) {
+        require (g is Graphics2D)
+        g.setComposite(AlphaComposite.SrcOver.derive(0.5f))
         g.clearRect(0, 0, width, height)
         var i = 0
         for (image in data) {
             g.color = colors[i++]
             for (p in image) {
-                g.fillRect(p.x * 3 + width / 2, p.y * 3 + height / 2, 3, 3)
+                g.fillRect(p.x * scale + width / 2, p.y * scale + height / 2, scale, scale)
             }
         }
     }
@@ -45,6 +53,11 @@ class GalaxyCanvas(private val engine: GalaxyEngine) : Canvas() {
         state = engine.car(engine.cdr(output))
         val imagesConsList = engine.car(engine.cdr(engine.cdr(output)))
         data = imagesConsList.asSequence().map { toVecList(it) }.toList()
+        val minX = data.flatMap { img -> img.map { it.x } }.min()!!
+        val minY = data.flatMap { img -> img.map { it.y } }.min()!!
+        val maxX = data.flatMap { img -> img.map { it.x } }.max()!!
+        val maxY = data.flatMap { img -> img.map { it.y } }.max()!!
+        scale = min(width.toDouble() / max(abs(minX)+1, abs(maxX)+1), height.toDouble() / max(abs(minY)+1, abs(maxY)+1)).toInt() / 2
         repaint()
     }
 
