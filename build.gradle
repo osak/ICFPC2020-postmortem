@@ -6,11 +6,23 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
 
 task run(type: JavaExec) {
     jvmArgs '-Xss2m'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'jp.osak.icfpc2020.Main'
+    }
+
+    from {
+        configurations.compile.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
 }
 
 compileKotlin {
