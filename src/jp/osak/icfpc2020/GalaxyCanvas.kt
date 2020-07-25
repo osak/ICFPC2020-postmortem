@@ -5,8 +5,6 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.lang.Double.min
 import java.lang.Math.*
-import kotlin.math.absoluteValue
-import kotlin.math.nextDown
 
 data class Vec(val x: Int, val y: Int)
 
@@ -15,6 +13,7 @@ class GalaxyCanvas(private val engine: GalaxyEngine) : Canvas() {
     private var data: List<List<Vec>> = listOf()
     private var scale = 5
     private val colors = listOf(Color.BLUE, Color.GREEN, Color.RED, Color.GRAY, Color.ORANGE, Color.PINK)
+    private val sender = GalaxySender()
 
     init {
         addMouseListener(object : MouseAdapter() {
@@ -41,17 +40,9 @@ class GalaxyCanvas(private val engine: GalaxyEngine) : Canvas() {
     }
 
     fun run(p: Vec) {
-        val program =
-            App(
-                App(
-                    Lambda(Lambda.Type.REF, listOf(Name("galaxy"))),
-                    state
-                ),
-                Lambda(Lambda.Type.CONS, listOf(Num(p.x.toLong()), Num(p.y.toLong())))
-            )
-        val output = engine.evaluateFull(program)
-        state = engine.car(engine.cdr(output))
-        val imagesConsList = engine.car(engine.cdr(engine.cdr(output)))
+        val output = interact(p)
+        state = engine.car(output)
+        val imagesConsList = engine.car(engine.cdr(output))
         data = imagesConsList.asSequence().map { toVecList(it) }.toList()
         val minX = data.flatMap { img -> img.map { it.x } }.min()!!
         val minY = data.flatMap { img -> img.map { it.y } }.min()!!
@@ -59,6 +50,29 @@ class GalaxyCanvas(private val engine: GalaxyEngine) : Canvas() {
         val maxY = data.flatMap { img -> img.map { it.y } }.max()!!
         scale = min(width.toDouble() / max(abs(minX)+1, abs(maxX)+1), height.toDouble() / max(abs(minY)+1, abs(maxY)+1)).toInt() / 2
         repaint()
+    }
+
+    fun interact(p: Vec): Term {
+        var currentState = state
+        var currentData: Term = Lambda(Lambda.Type.CONS, listOf(Num(p.x.toLong()), Num(p.y.toLong())))
+        while (true) {
+            val program =
+                App(
+                    App(
+                        Lambda(Lambda.Type.REF, listOf(Name("galaxy"))),
+                        currentState
+                    ),
+                    currentData
+                )
+            val output = engine.evaluateFull(program)
+            val status = engine.car(output) as Num
+            if (status.v == 0L) {
+                return engine.cdr(output)
+            }
+            currentState = engine.car(engine.cdr(output))
+            val data = engine.car(engine.cdr(engine.cdr(output)))
+            currentData = sender.send(data, engine)
+        }
     }
 
     fun toVecList(t: Term): List<Vec> {
