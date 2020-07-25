@@ -1,6 +1,6 @@
 package jp.osak.icfpc2020
 
-class GalaxyEngine {
+class GalaxyEngine(val dict: Map<String, Term>) {
     fun evaluate(t: Term): Term {
         return when (t) {
             is Num -> t
@@ -68,13 +68,10 @@ class GalaxyEngine {
             Lambda.Type.CAR -> return App(t.args[0], Lambda(Lambda.Type.T))
             Lambda.Type.CDR -> return App(t.args[0], Lambda(Lambda.Type.F))
             Lambda.Type.NIL -> return Lambda(Lambda.Type.T)
-            Lambda.Type.ISNIL -> {
-                val arg = evaluateFull(t.args[0])
-                return if (arg is Lambda && arg.type == Lambda.Type.T) {
-                    Lambda(Lambda.Type.T)
-                } else {
-                    Lambda(Lambda.Type.F)
-                }
+            Lambda.Type.ISNIL -> return App(t.args[0], App(Lambda(Lambda.Type.T), App(Lambda(Lambda.Type.T), Lambda(Lambda.Type.F))))
+            Lambda.Type.REF -> {
+                val name = (t.args[0] as Name).name
+                return dict[name] ?: error("Reference to unknown name: ${name}")
             }
         }
     }
@@ -108,9 +105,11 @@ data class Lambda(val type: Type, val args: List<Term> = listOf()): Term {
         CAR(1),
         CDR(1),
         NIL(1),
-        ISNIL(1)
+        ISNIL(1),
+        REF(1)
     }
 }
 
 data class App(val f: Term, val arg: Term) : Term
 data class Num(val v: Long) : Term
+data class Name(val name: String) : Term

@@ -20,12 +20,23 @@ private class Context(val code: String) {
                 val v = parseTerm()
                 return App(f, v)
             }
-            code[pos].isDigit() -> {
+            code[pos].isDigit() || code[pos] == '-' -> {
                 val start = pos
+                if (code[pos] == '-') {
+                    pos++
+                }
                 while (pos < code.length && code[pos].isDigit()) {
                     pos++
                 }
                 return Num(code.substring(start, pos).toLong())
+            }
+            code[pos] == ':' -> {
+                pos++
+                val start = pos
+                while (pos < code.length && code[pos] != ' ') {
+                    pos++
+                }
+                return Lambda(Lambda.Type.REF, listOf(Name(code.substring(start, pos))))
             }
             else -> {
                 val start = pos

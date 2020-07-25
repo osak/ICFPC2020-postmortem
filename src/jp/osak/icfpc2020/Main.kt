@@ -1,6 +1,10 @@
 package jp.osak.icfpc2020
 
+import java.io.BufferedReader
+import java.io.FileInputStream
+import java.io.FileReader
 import javax.swing.JFrame
+import kotlin.streams.asSequence
 
 class Main {
     fun run() {
@@ -15,12 +19,24 @@ class Main {
         canvas.createBufferStrategy(2)
     }
 
-    fun test() {
-        val engine = GalaxyEngine()
+    fun loadPrelude(): Map<String, Term> {
         val parser = GalaxyParser()
-        val t = parser.parseGalaxy("ap ap ap s mul ap add 1 6")
-        println(t)
-        println(engine.evaluateFull(t))
+        return BufferedReader(FileReader("galaxy.txt")).use { reader ->
+            reader.lines().asSequence().map { line ->
+                val values = line.split('=')
+                val name = values[0].trim().substring(1)
+                Pair(name, parser.parseGalaxy(values[1].trim()))
+            }.toMap()
+        }
+    }
+
+    fun test() {
+        val prelude = loadPrelude()
+        val engine = GalaxyEngine(prelude)
+        val parser = GalaxyParser()
+        val eval = parser.parseGalaxy("ap ap :galaxy nil ap ap cons 0 0")
+        val result = engine.evaluateFull(eval)
+        println(result)
     }
 
     companion object {
