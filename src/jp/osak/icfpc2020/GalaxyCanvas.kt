@@ -3,6 +3,8 @@ package jp.osak.icfpc2020
 import java.awt.Canvas
 import java.awt.Color
 import java.awt.Graphics
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 
 data class Vec(val x: Int, val y: Int)
 
@@ -10,6 +12,14 @@ class GalaxyCanvas(private val engine: GalaxyEngine) : Canvas() {
     private var state: Term = Lambda(Lambda.Type.NIL)
     private var data: List<List<Vec>> = listOf()
     private val colors = listOf(Color.BLUE, Color.GREEN, Color.RED, Color.GRAY, Color.ORANGE)
+
+    init {
+        addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                run(Vec((e.x - width/2) / 3, (e.y - height/2) / 3))
+            }
+        })
+    }
 
     override fun paint(g: Graphics) {
         g.clearRect(0, 0, width, height)
