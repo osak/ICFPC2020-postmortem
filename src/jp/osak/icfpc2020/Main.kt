@@ -15,10 +15,19 @@ class Main {
         canvas.createBufferStrategy(2)
     }
 
+    fun test() {
+        val engine = GalaxyEngine()
+        val parser = GalaxyParser()
+        val t = parser.parseGalaxy("ap ap ap s mul ap add 1 6")
+        println(t)
+        println(engine.evaluateFull(t))
+    }
+
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            Main().run()
+            //Main().run()
+            Main().test()
         }
     }
 }
