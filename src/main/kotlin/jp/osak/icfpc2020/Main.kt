@@ -2,6 +2,7 @@ package jp.osak.icfpc2020
 
 import java.io.BufferedReader
 import java.io.FileReader
+import java.io.InputStreamReader
 import javax.swing.JFrame
 import kotlin.streams.asSequence
 
@@ -28,7 +29,8 @@ class Main {
     }
 
     fun loadPrelude(): Map<String, Term> {
-        return BufferedReader(FileReader("galaxy.txt")).use { reader ->
+        val isr = InputStreamReader(this::class.java.getResourceAsStream("/galaxy.txt"))
+        return BufferedReader(isr).use { reader ->
             reader.lines().asSequence().map { line ->
                 val values = line.split('=')
                 val name = values[0].trim().substring(1)

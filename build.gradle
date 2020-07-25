@@ -8,6 +8,11 @@ repositories {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
 }
+
+task run(type: JavaExec) {
+    jvmArgs '-Xss2m'
+}
+
 compileKotlin {
     kotlinOptions {
         jvmTarget = "1.8"
