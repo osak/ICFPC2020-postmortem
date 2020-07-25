@@ -2,12 +2,15 @@ package jp.osak.icfpc2020
 
 class GalaxyEngine(val dict: Map<String, Term>) {
     fun evaluate(t: Term): Term {
-        return when (t) {
-            is Num -> t
-            is App -> evalApp(t)
-            is Lambda -> evalLambda(t)
-            else -> throw IllegalArgumentException("Unknown term ${t}")
+        if (t.cache == null) {
+            t.cache = when (t) {
+                is Num -> t
+                is App -> evalApp(t)
+                is Lambda -> evalLambda(t)
+                else -> throw IllegalArgumentException("Unknown term ${t}")
+            }
         }
+        return t.cache!!
     }
 
     fun evalApp(t: App): Term {
@@ -102,9 +105,11 @@ class GalaxyEngine(val dict: Map<String, Term>) {
     }
 }
 
-interface Term
+open class Term {
+    var cache: Term? = null
+}
 
-data class Lambda(val type: Type, val args: List<Term> = listOf()) : Term {
+data class Lambda(val type: Type, val args: List<Term> = listOf()) : Term() {
     enum class Type(val arity: Int) {
         ADD(2),
         MUL(2),
@@ -127,6 +132,6 @@ data class Lambda(val type: Type, val args: List<Term> = listOf()) : Term {
     }
 }
 
-data class App(val f: Term, val arg: Term) : Term
-data class Num(val v: Long) : Term
-data class Name(val name: String) : Term
+data class App(val f: Term, val arg: Term) : Term()
+data class Num(val v: Long) : Term()
+data class Name(val name: String) : Term()
