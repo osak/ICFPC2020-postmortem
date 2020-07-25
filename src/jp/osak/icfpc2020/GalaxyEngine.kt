@@ -68,7 +68,10 @@ class GalaxyEngine(val dict: Map<String, Term>) {
             Lambda.Type.CAR -> return App(t.args[0], Lambda(Lambda.Type.T))
             Lambda.Type.CDR -> return App(t.args[0], Lambda(Lambda.Type.F))
             Lambda.Type.NIL -> return Lambda(Lambda.Type.T)
-            Lambda.Type.ISNIL -> return App(t.args[0], App(Lambda(Lambda.Type.T), App(Lambda(Lambda.Type.T), Lambda(Lambda.Type.F))))
+            Lambda.Type.ISNIL -> return App(
+                t.args[0],
+                App(Lambda(Lambda.Type.T), App(Lambda(Lambda.Type.T), Lambda(Lambda.Type.F)))
+            )
             Lambda.Type.REF -> {
                 val name = (t.args[0] as Name).name
                 return dict[name] ?: error("Reference to unknown name: ${name}")
@@ -83,12 +86,26 @@ class GalaxyEngine(val dict: Map<String, Term>) {
         }
         return cur
     }
+
+    fun car(t: Term): Term {
+        require(t is Lambda)
+        require(t.type == Lambda.Type.CONS)
+        require(t.args.size >= 2)
+        return t.args[0]
+    }
+
+    fun cdr(t: Term): Term {
+        require(t is Lambda)
+        require(t.type == Lambda.Type.CONS)
+        require(t.args.size >= 2)
+        return t.args[1]
+    }
 }
 
 interface Term
 
-data class Lambda(val type: Type, val args: List<Term> = listOf()): Term {
-    enum class Type (val arity: Int) {
+data class Lambda(val type: Type, val args: List<Term> = listOf()) : Term {
+    enum class Type(val arity: Int) {
         ADD(2),
         MUL(2),
         DIV(2),
