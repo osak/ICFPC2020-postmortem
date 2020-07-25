@@ -91,14 +91,14 @@ class GalaxyEngine(val dict: Map<String, Term>) {
         require(t is Lambda)
         require(t.type == Lambda.Type.CONS)
         require(t.args.size >= 2)
-        return t.args[0]
+        return evaluateFull(t.args[0])
     }
 
     fun cdr(t: Term): Term {
         require(t is Lambda)
         require(t.type == Lambda.Type.CONS)
         require(t.args.size >= 2)
-        return t.args[1]
+        return evaluateFull(t.args[1])
     }
 }
 
